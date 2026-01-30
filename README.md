@@ -33,3 +33,9 @@ This project focuses on interaction design, visual feedback, and motion to creat
 
 ## Notes
 This project was created as a portfolio piece to demonstrate UI/UX thinking, interaction design, and front-end development skills while working with a real-world API.
+
+## Spotify API Disclaimer
+
+Deadwax uses the Spotify Web API to retrieve music-related data such as album information, artwork, and track details. Playback behavior and content availability are subject to Spotify’s platform limitations and terms of service.
+
+This project is not affiliated with, endorsed by, or sponsored by Spotify. All music data and assets are the property of their respective rights holders and are used for educational and demonstrative purposes only.
