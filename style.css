@@ -258,6 +258,37 @@ body {
   border-radius: 50%;
 }
 
+.spotify-playlist-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: var(--spotify-green);
+  text-decoration: none;
+  opacity: 0.85;
+}
+
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding-top: 12px;
+  font-size: 0.85rem;
+  color: #cea5fb;
+  text-decoration: none;
+  opacity: 0.85;
+}
+
+.spotify-playlist-link:hover,
+.github-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
 .collection-list {
   flex: 1;
   overflow-y: auto;
