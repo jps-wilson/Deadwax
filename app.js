@@ -548,16 +548,14 @@ function togglePlay() {
     return;
   }
 
-  const isPlaying = !state.playing; // checks state
-
+  if (!spotifyController) return;
   if (state.playing) {
-    stopPlayback();
+    spotifyController.pause();
+    stopPlayback(); // moves arm to rest, stop spinning, and updates state/ui
   } else {
-    startPlayback();
+    startPlayback(); // mover arm onto record, start spinning, resume spotify
   }
-
-  // Update arm position
-  moveArm(isPlaying);
+  state.playing = !state.playing;
 }
 
 // ============================================
