@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive digital record player with Spotify integration.">
+    <title>Record Player</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Record Collection Sidebar -->
+        <aside class="record-collection">
+            <h2>Records Collection</h2>
+            <div class="collection-list" id="collectionList"></div>
+            <div id="spotifyEmbed"></div>
+        </aside>
+
+
+        <!-- Record Player -->
+        <main class="player-area">
+            <div class="player" role="application" aria-label="Record Player">
+                <!-- 45 RPM adapter -->
+                <div class="rpm-adapter" aria-hidden="true"></div>
+
+                <!-- platter with dots -->
+                <div class="platter" aria-hidden="true">
+                    <div class="spindle"></div>
+                </div>
+
+                <!-- strobe light -->
+                <div class="strobe-light" aria-hidden="true"></div>
+
+                <!-- draggable record -->
+                <div class="lp" id="activeRecord">
+                    <div class="record">
+                        <div class="label" id="recordLabel"></div>
+                    </div>
+                </div>
+
+                <!-- arm rest -->
+                <div class="arm-rest" aria-hidden="true"></div>
+
+                <!-- ARM ASSEMBLY -->
+                <div class="arm-container" aria-label="Tonearm">
+                    <div class="arm-counterweight"></div>
+                    <div class="arm-base"></div>
+                    <div class="arm rest">
+                        <div class="headshell"></div>
+                        <div class="stylus"></div>
+                    </div>
+                </div>
+
+                <!-- controls -->
+                <div class="led" aria-hidden="true"></div>
+                <button class="start-stop" type="button">Start / Stop</button>
+
+                <!-- now playing info -->
+                <div class="now-playing" id="nowPlaying">
+                    <span class="now-playing-text">Drop a record to play</span>
+                </div>
+
+                <!-- speed selector -->
+                <div class="speed-selector" role="group" aria-label="Speed selection (RPM)">
+                    <button class="speed-btn active" type="button" data-speed="33" aria-pressed="true">33</button>
+                    <button class="speed-btn" type="button" data-speed="45" aria-pressed="false">45</button>
+                </div>
+
+                <!-- pitch control -->
+                <div class="pitch" role="group" aria-label="Pitch control">
+                    <div class="pitch-track" aria-hidden="true"></div>
+                    <div class="pitch-center" aria-hidden="true"></div>
+                    <div class="pitch-handle" tabindex="0" role="slider" aria-label="Pitch adjustment"
+                        aria-valuemin="-8" aria-valuemax="8" aria-valuenow="0" aria-valuetext="0%"></div>
+                    <span class="pitch-label plus" aria-hidden="true">+8</span>
+                    <span class="pitch-label zero" aria-hidden="true">0</span>
+                    <span class="pitch-label minus" aria-hidden="true">-8</span>
+                </div>
+
+
+                <!-- speaker vents -->
+                <div class="speaker" aria-hidden="true">
+                    <div class="hole"></div>
+                    <div class="hole"></div>
+                    <div class="hole"></div>
+                    <div class="hole"></div>
+                    <div class="hole"></div>
+                    <div class="hole"></div>
+                    <div class="hole"></div>
+                    <div class="hole"></div>
+                </div>
+
+                <!-- volume knob -->
+                <div class="knob-container volume">
+                    <div class="knob bottom" aria-hidden="true"></div>
+                    <div class="knob top" tabindex="0" role="slider" aria-label="Volume" aria-valuemin="0"
+                        aria-valuemax="100" aria-valuenow="70"></div>
+                </div>
+
+                <!-- brand -->
+                <div class="brand" aria-hidden="true">Wilson
+                    <span id="tributeId">MECW-1967</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <a href="https://developer.spotify.com/documentation/embeds" target="_blank" rel="noopener noreferrer">Powered
+            by Spotify · Content © Spotify AB</a>
+    </footer>
+
+    <script src="https://open.spotify.com/embed/iframe-api/v1"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
