@@ -42,8 +42,8 @@ This project is not affiliated with, endorsed by, or sponsored by Spotify. All m
 
 ## Spotify Playlist 🎵
 Experience all the albums featured in Deadwax in one curated Spotify playlist:  
-[Listen on Spotify](https://open.spotify.com/playlist/YOUR_PLAYLIST_ID)
+[Listen on Spotify](https://open.spotify.com/playlist/0ooU9OrjsKcyyz6vuiAvGC?si=g5bn3tnvTNaffcwDogqqZw)
 
 Got an album you think should be added? We’d love to hear from you!  
 Create a GitHub issue with your suggestion here:  
-[Suggest an Album](https://github.com/YOUR_USERNAME/REPO_NAME/issues/new)
+[Suggest an Album](https://github.com/jps-wilson/Deadwax/issues/new/choose)
