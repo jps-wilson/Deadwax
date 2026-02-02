@@ -599,10 +599,105 @@ async function updateAlbumCovers() {
 renderAlbumList();
 updateAlbumCovers();
 
-// Overlay on page load with tips logic
+// Overlay on page load with guided tooltip sequence logic
 const overlay = document.getElementById("firstTimeOverlay");
 const overlayDismiss = document.getElementById("overlayDismiss");
 const overlaySkipTips = document.getElementById("overlaySkipTips");
+
+// Guided tooltip sequence system
+let tooltipStepIndex = 0;
+let activeTooltip = null;
+
+const tooltipSteps = [
+  {
+    selector: ".record-collection h2",
+    text: "Choose an album and drag it to the turntable",
+    placement: "bottom",
+  },
+  {
+    selector: ".platter",
+    text: "Drop the record here to load the album",
+  },
+  {
+    selector: ".start-stop",
+    text: "Press Start / Stop to play or pause",
+  },
+];
+
+function showTooltipStep(index) {
+  cleanupTooltip();
+
+  const step = tooltipSteps[index];
+  if (!step) return;
+
+  const target = document.querySelector(step.selector);
+  if (!target) return;
+
+  const tip = document.createElement("div");
+  tip.className = "tooltip";
+  tip.innerHTML = `<div>${step.text}</div>
+                  <div class = "tooltip-controls">
+                    <button id="tooltipSkip">Skip</button>
+                    <button id=tooltipNext>${index === tooltipSteps.length - 1 ? "Done" : "Next"}</button>
+                  </div>`;
+  document.body.appendChild(tip);
+
+  requestAnimationFrame(() => {
+    const rect = target.getBoundingClientRect();
+    const tooltipWidth = tip.offsetWidth;
+    const tooltipHeight = tip.offsetHeight;
+    const padding = 12;
+
+    let left;
+    let top;
+
+    if (step.placement === "bottom") {
+      left = rect.left + rect.width / 2 - tooltipWidth / 2;
+      top = rect.bottom + padding;
+
+      tip.classList.add("bottom");
+    } else {
+      // default (above)
+      left = rect.left + rect.width / 2 - tooltipWidth / 2;
+      top = rect.top - tooltipHeight - padding;
+
+      tip.classList.remove("bottom");
+    }
+
+    tip.style.left = `${left}px`;
+    tip.style.top = `${top}px`;
+
+    tip.classList.add("show");
+  });
+
+  activeTooltip = tip;
+
+  document.getElementById("tooltipNext").addEventListener("click", () => {
+    tooltipStepIndex++;
+    if (tooltipStepIndex < tooltipSteps.length) {
+      showTooltipStep(tooltipStepIndex);
+    } else {
+      cleanupTooltip();
+    }
+  });
+
+  document
+    .getElementById("tooltipSkip")
+    .addEventListener("click", cleanupTooltip);
+}
+
+function cleanupTooltip() {
+  if (activeTooltip) {
+    activeTooltip.remove();
+    activeTooltip = null;
+  }
+}
+
+function startTooltipSequence() {
+  tooltipStepIndex = 0;
+
+  showTooltipStep(tooltipStepIndex);
+}
 
 if (overlay && overlayDismiss && overlaySkipTips) {
   // always show overlay initially
@@ -610,66 +705,10 @@ if (overlay && overlayDismiss && overlaySkipTips) {
 
   overlayDismiss.addEventListener("click", () => {
     overlay.style.display = "none";
-    showTooltips();
+    startTooltipSequence();
   });
 
   overlaySkipTips.addEventListener("click", () => {
     overlay.style.display = "none";
-    disableTooltips();
   });
-}
-
-// Function to show tooltips
-function showTooltips() {
-  // Example tooltip elements for key interactive elements
-  const startStopBtn = document.querySelector(".start-stop");
-  const platter = document.querySelector(".platter");
-  const speedBtns = document.querySelectorAll(".speed-btn");
-  const pitchHandle = document.querySelector(".pitch-handle");
-
-  const tooltipStyle = `
-        position: absolute;
-        background: rgba(30,30,30,0.9);
-        color: #fff;
-        padding: 6px 10px;
-        border-radius: 6px;
-        font-size: 12px;
-        pointer-events: none;
-        z-index: 9999;
-        white-space: nowrap;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    `;
-
-  function createTooltip(element, text) {
-    const tip = document.createElement("div");
-    tip.className = "tooltip";
-    tip.innerText = text;
-    tip.style.cssText = tooltipStyle;
-    document.body.appendChild(tip);
-
-    const rect = element.getBoundingClientRect();
-    tip.style.left = rect.left + rect.width / 2 - tip.offsetWidth / 2 + "px";
-    tip.style.top = rect.top - 30 + "px";
-    setTimeout(() => (tip.style.opacity = "1"), 100);
-    return tip;
-  }
-
-  window.activeTooltips = [];
-  if (startStopBtn)
-    window.activeTooltips.push(
-      createTooltip(startStopBtn, "Press to start or pause playback"),
-    );
-  if (platter)
-    window.activeTooltips.push(
-      createTooltip(platter, "Drop a record here to play"),
-    );
-}
-
-// Function to disable tooltips
-function disableTooltips() {
-  if (window.activeTooltips) {
-    window.activeTooltips.forEach((tip) => tip.remove());
-    window.activeTooltips = [];
-  }
 }

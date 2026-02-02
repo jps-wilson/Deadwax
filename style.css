@@ -1,23 +1,3 @@
-/*  Tooltip controls */
-.tooltip-controls {
-  margin-top: 8px;
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-}
-
-.tooltip-controls button {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  color: #fff;
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.tooltip-controls button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
 /* First-time overlay */
 .overlay {
   position: fixed;
@@ -70,9 +50,29 @@
 .overlay-actions button:hover {
   background: var(--led-off);
 }
+/*  Tooltip controls */
+.tooltip-controls {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.tooltip-controls button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.tooltip-controls button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
 /* Tooltips */
 .tooltip {
-  position: absolute;
+  position: fixed;
   background: rgba(20, 20, 20, 0.9);
   backdrop-filter: blur(6px);
   color: #fff;
@@ -80,13 +80,13 @@
   border-radius: 10px;
   font-size: 13px;
   font-weight: 500;
-  pointer-events: none;
-  z-index: 9999;
+  pointer-events: auto;
+  z-index: 10001;
   white-space: nowrap;
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translateY(-4px);
   transition:
-    opacity 0.3s ease,
+    opacity 0.2s ease,
     transform 0.2s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(30, 167, 255, 0.5);
@@ -102,19 +102,27 @@
   position: absolute;
   width: 0;
   height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid rgba(20, 20, 20, 0.9);
-  bottom: -6px;
+}
+
+.tooltip.bottom {
+  margin-top: 4px;
+}
+
+.tooltip.bottom::after {
+  top: -8px;
   left: 50%;
   transform: translateX(-50%);
+
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid rgba(20, 20, 20, 0.95);
 }
 
 /* Tooltip arrow for highlighting interactive elements */
 .tooltip.highlight-startstop::after {
   border-top-color: rgba(30, 167, 255, 0.5);
 }
-.tooltip.tooltip.highlight-platter::after {
+.tooltip.highlight-platter::after {
   border-top-color: rgba(30, 167, 255, 0.5);
 }
 
