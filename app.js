@@ -133,6 +133,13 @@ const state = {
 
 // Spotify Controller
 let spotifyController = null;
+let playbackQueue = null;
+
+// promise that resolves when Spotify controller is ready
+let spotifyReadyResolve;
+const spotifyReady = new Promise((resolve) => {
+  spotifyReadyResolve = resolve;
+});
 
 // Drag state
 let albumDragging = false;
@@ -313,13 +320,7 @@ function loadAlbumOntoPlatter(album) {
     `;
   }
 
-  // spotify
-  if (spotifyController) {
-    spotifyController.loadUri(`spotify:album:${album.spotifyId}`);
-  }
-
-  // auto-start playback after arm reaches the record
-  setTimeout(() => startPlayback(), 600);
+  // don't call startPlayBack() immediately -> let user press play, or rely on promise-safe playback logic
 }
 
 // TRACK SELECTION
@@ -422,62 +423,24 @@ function skipToTrack(trackNumber) {
 }
 
 // ============================================
-// PLAYBACK CONTROLS
+// PLAYBACK CONTROLS (Consolidated)
 // ============================================
 
-// function startPlayback() {
-//   if (!state.recordLoaded) {
-//     console.log("No record loaded");
-//     return;
-//   }
-//   state.playing = true;
+async function startPlayback() {
+  if (!state.recordLoaded || !state.currentAlbum) return;
 
-//   if (looseRecord) {
-//     looseRecord.classList.add("spinning");
-//   }
-
-//   // Animate arm onto LP
-//   const needleArm = document.querySelector(".arm");
-//   if (needleArm) {
-//     needleArm.classList.remove("rest");
-//     needleArm.classList.add("playing");
-//   }
-
-//   if (led) {
-//     led.classList.add("on");
-//   }
-
-//   if (strobeLight) {
-//     strobeLight.classList.add("on");
-//   }
-
-//   if (nowPlaying) {
-//     nowPlaying.classList.add("active");
-//     if (state.currentAlbum) {
-//       nowPlaying.innerHTML = `
-//         <span class="now-playing-text">Now Playing - Track ${state.currentTrack}</span>
-//         <span class="now-playing-title">${state.currentAlbum.name}</span>
-//         <span class="now-playing-artist">${state.currentAlbum.artist}</span>
-//       `;
-//     }
-//   }
-function startPlayback() {
-  if (!state.recordLoaded) return;
+  // wait for spotify controller to be ready
+  await spotifyReady;
 
   state.playing = true;
 
-  // Record spinning
+  // ui updates
   if (looseRecord) looseRecord.classList.add("spinning");
-
-  // Animate arm onto record
   moveArm(true);
-
-  // Lights
   if (led) led.classList.add("on");
   if (strobeLight) strobeLight.classList.add("on");
 
-  // Update now playing display
-  if (nowPlaying && state.currentAlbum) {
+  if (nowPlaying) {
     nowPlaying.classList.add("active");
     nowPlaying.innerHTML = `
       <span class="now-playing-text">Now Playing - Track ${state.currentTrack}</span>
@@ -488,149 +451,56 @@ function startPlayback() {
 
   updateSpinDuration();
 
-  // Spotify playback
-  if (spotifyController && state.currentAlbum) {
-    if (!state.hasLoadedOnce) {
-      spotifyController.loadUri(
-        `spotify:album:${state.currentAlbum.spotifyId}`,
-      );
-      state.hasLoadedOnce = true;
-
-      // Skip to current track after load
-      setTimeout(() => {
-        if (state.currentTrack > 1) {
-          let skipsRemaining = state.currentTrack - 1;
-          function doSkip() {
-            if (skipsRemaining > 0) {
-              spotifyController.next();
-              skipsRemaining--;
-              setTimeout(doSkip, 350);
-            } else {
-              spotifyController.resume();
-            }
-          }
-          doSkip();
-        } else {
-          spotifyController.resume();
-        }
-      }, 500);
-    } else {
-      // Resume if album already loaded
-      spotifyController.resume();
+  // Spotify playback logic: load album only if not already loaded
+  if (spotifyController) {
+    // check if current album is already loaded
+    if (
+      !state._spotifyLoadedAlbumId ||
+      state._spotifyLoadedAlbumId !== state.currentAlbum.spotifyId
+    ) {
+      // load  album
+      await new Promise((resolve) => {
+        spotifyController.loadUri(
+          `spotify:album:${state.currentAlbum.spotifyId}`,
+        );
+        // give controller time to load before skipping
+        setTimeout(resolve, 500);
+      });
+      state._spotifyLoadedAlbumId = state.currentAlbum.spotifyId;
     }
-  }
-}
 
-function stopPlayback() {
-  state.playing = false;
-
-  // Stop spinning and move arm to rest
-  if (looseRecord) looseRecord.classList.remove("spinning");
-  moveArm(false);
-
-  // Lights off
-  if (led) led.classList.remove("on");
-  if (strobeLight) strobeLight.classList.remove("on");
-
-  if (nowPlaying) nowPlaying.classList.remove("active");
-
-  // Pause Spotify without resetting album
-  if (spotifyController) spotifyController.pause();
-}
-
-function togglePlay() {
-  if (!state.recordLoaded) {
-    startStopBtn?.classList.add("shake");
-    setTimeout(() => startStopBtn.classList.remove("shake"), 300);
-    return;
-  }
-
-  if (!spotifyController) return;
-
-  if (state.playing) {
-    stopPlayback(); // Pause and move arm to rest
-  } else {
-    startPlayback(); // Play or resume and move arm onto record
-  }
-
-  state.playing = !state.playing;
-}
-
-// Arm drift and position update removed
-updateSpinDuration();
-
-// Start Spotify playback
-if (spotifyController && state.currentAlbum) {
-  console.log(`Starting playback from track ${state.currentTrack}`);
-
-  // Load album first
-  spotifyController.loadUri(`spotify:album:${state.currentAlbum.spotifyId}`);
-
-  // Wait for load, then skip to track and play
-  setTimeout(() => {
+    // skip to desired track if needed
     if (state.currentTrack > 1) {
-      // Skip to the selected track
       let skipsRemaining = state.currentTrack - 1;
-
       function skipAndPlay() {
         if (skipsRemaining > 0) {
           spotifyController.next();
           skipsRemaining--;
-          console.log(`Skipping... ${skipsRemaining} remaining`);
-
-          if (skipsRemaining > 0) {
-            setTimeout(skipAndPlay, 350);
-          } else {
-            // Done skipping, now play
-            setTimeout(() => {
-              spotifyController.resume();
-              console.log("Playback started");
-            }, 300);
-          }
+          setTimeout(skipAndPlay, 400);
+        } else {
+          spotifyController.resume();
         }
       }
-
       skipAndPlay();
     } else {
-      // Track 1, just play
       spotifyController.resume();
-      console.log("Playback started at track 1");
     }
-  }, 500);
+  }
 }
 
-function stopPlayback() {
+async function stopPlayback() {
   state.playing = false;
 
-  if (looseRecord) {
-    looseRecord.classList.remove("spinning");
-  }
+  // ui updates
+  if (looseRecord) looseRecord.classList.remove("spinning");
+  moveArm(false);
+  if (led) led.classList.remove("on");
+  if (strobeLight) strobeLight.classList.remove("on");
+  if (nowPlaying) nowPlaying.classList.remove("active");
 
-  // Animate arm off LP
-  const needleArm = document.querySelector(".arm");
-  if (needleArm) {
-    needleArm.classList.remove("playing");
-    needleArm.classList.add("rest");
-  }
-
-  if (led) {
-    led.classList.remove("on");
-  }
-
-  if (strobeLight) {
-    strobeLight.classList.remove("on");
-  }
-
-  if (nowPlaying) {
-    nowPlaying.classList.remove("active");
-  }
-
-  if (spotifyController) {
-    spotifyController.pause();
-    console.log("Playback paused");
-  }
-
-  // Arm drift and position update removed
+  // wait for Spotify controller to be ready before pausing
+  await spotifyReady;
+  if (spotifyController) spotifyController.pause();
 }
 
 function togglePlay() {
@@ -642,14 +512,11 @@ function togglePlay() {
     return;
   }
 
-  if (!spotifyController) return;
   if (state.playing) {
-    spotifyController.pause();
-    stopPlayback(); // moves arm to rest, stop spinning, and updates state/ui
+    stopPlayback();
   } else {
-    startPlayback(); // mover arm onto record, start spinning, resume spotify
+    startPlayback();
   }
-  state.playing = !state.playing;
 }
 
 // ============================================
@@ -702,17 +569,7 @@ window.onSpotifyIframeApiReady = (IFrameAPI) => {
   IFrameAPI.createController(element, options, (controller) => {
     spotifyController = controller;
     console.log("Spotify controller ready");
-
-    // Note: Spotify Embed API has limited methods:
-    // - play()
-    // - togglePlay()
-    // - pause()
-    // - resume()
-    // - seek(seconds)
-    // - loadUri(uri)
-    // - next()
-    // - previous()
-    // Volume is controlled by the user via the embed UI, not programmatically
+    if (typeof spotifyReadyResolve === "function") spotifyReadyResolve();
   });
 };
 
