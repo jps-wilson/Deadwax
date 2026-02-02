@@ -39,3 +39,11 @@ This project was created as a portfolio piece to demonstrate UI/UX thinking, int
 Deadwax uses the Spotify Web API to retrieve music-related data such as album information, artwork, and track details. Playback behavior and content availability are subject to Spotify’s platform limitations and terms of service.
 
 This project is not affiliated with, endorsed by, or sponsored by Spotify. All music data and assets are the property of their respective rights holders and are used for educational and demonstrative purposes only.
+
+## Spotify Playlist 🎵
+Experience all the albums featured in Deadwax in one curated Spotify playlist:  
+[Listen on Spotify](https://open.spotify.com/playlist/YOUR_PLAYLIST_ID)
+
+Got an album you think should be added? We’d love to hear from you!  
+Create a GitHub issue with your suggestion here:  
+[Suggest an Album](https://github.com/YOUR_USERNAME/REPO_NAME/issues/new)
