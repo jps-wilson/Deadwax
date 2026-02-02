@@ -626,8 +626,8 @@ function setupTouchDrag(albumCards) {
       document.body.appendChild(touchDragPreview);
 
       const touch = e.touches[0];
-      touchDragPreview.style.left = touch.clientX - 50 + "px";
-      touchDragPreview.style.top = touch.clientY - 50 + "px";
+      touchDragPreview.style.left = touch.clientX + "px";
+      touchDragPreview.style.top = touch.clientY + "px";
 
       e.preventDefault();
     });
@@ -635,26 +635,58 @@ function setupTouchDrag(albumCards) {
     card.addEventListener("touchmove", (e) => {
       if (!touchDragPreview) return;
       const touch = e.touches[0];
-      touchDragPreview.style.left = touch.clientX - 50 + "px";
-      touchDragPreview.style.top = touch.clientY - 50 + "px";
+
+      // Move preview with finger
+      touchDragPreview.style.left = touch.clientX + "px";
+      touchDragPreview.style.top = touch.clientY + "px";
+
+      // Highlight if over the platter
+      const platterRect = playerElement
+        .querySelector(".platter")
+        .getBoundingClientRect();
+      if (
+        touch.clientX >= platterRect.left &&
+        touch.clientX <= platterRect.right &&
+        touch.clientY >= platterRect.top &&
+        touch.clientY <= platterRect.bottom
+      ) {
+        touchDragPreview.classList.add("active-over-platter");
+      } else {
+        touchDragPreview.classList.remove("active-over-platter");
+      }
+
       e.preventDefault();
     });
 
     card.addEventListener("touchend", (e) => {
       if (!touchDragPreview || !draggedAlbum) return;
 
-      const playerRect = playerElement.getBoundingClientRect();
       const touch = e.changedTouches[0];
+      const platterRect = playerElement
+        .querySelector(".platter")
+        .getBoundingClientRect();
+
+      // Snap to platter if released over it
       if (
-        touch.clientX >= playerRect.left &&
-        touch.clientX <= playerRect.right &&
-        touch.clientY >= playerRect.top &&
-        touch.clientY <= playerRect.bottom
+        touch.clientX >= platterRect.left &&
+        touch.clientX <= platterRect.right &&
+        touch.clientY >= platterRect.top &&
+        touch.clientY <= platterRect.bottom
       ) {
         loadAlbumOntoPlatter(draggedAlbum);
+
+        // Animate snapping
+        touchDragPreview.style.transition = "all 0.2s ease";
+        touchDragPreview.style.left =
+          platterRect.left + platterRect.width / 2 + "px";
+        touchDragPreview.style.top =
+          platterRect.top + platterRect.height / 2 + "px";
+        touchDragPreview.style.transform = "translate(-50%, -50%) scale(1)";
+        setTimeout(() => touchDragPreview.remove(), 220);
+      } else {
+        touchDragPreview.remove();
       }
 
-      touchDragPreview.remove();
       touchDragPreview = null;
       draggedAlbum = null;
     });
