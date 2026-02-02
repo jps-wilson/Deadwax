@@ -197,7 +197,6 @@ function renderAlbumList() {
   setupDragAndDrop();
 }
 
-// Drag & Drop
 function setupDragAndDrop() {
   const albumCards = document.querySelectorAll(".album-card");
 
@@ -289,7 +288,7 @@ function loadAlbumOntoPlatter(album) {
   state.currentTrack = 1;
   state.totalTracks = album.totalTracks || 10;
 
-  // show record
+  // Show record
   if (looseRecord) {
     looseRecord.style.display = "block";
     looseRecord.classList.add("on-platter");
@@ -311,7 +310,7 @@ function loadAlbumOntoPlatter(album) {
   moveArm(true);
   console.log(`Record dropped: ${album.name} by ${album.artist}`);
 
-  // update now playing display
+  // Update now playing display
   if (nowPlaying) {
     nowPlaying.innerHTML = `
       <span class="now-playing-text">Ready to play</span>
@@ -320,10 +319,11 @@ function loadAlbumOntoPlatter(album) {
     `;
   }
 
-  // don't call startPlayBack() immediately -> let user press play, or rely on promise-safe playback logic
+  // Don't call startPlayBack() immediately -> let user press play, or rely on promise-safe playback logic
 }
 
-// TRACK SELECTION
+// TODO: review this section of code
+// Track Section
 function setupTrackSelection() {
   const record = document.querySelector(".record");
   if (!record) {
@@ -365,7 +365,7 @@ function handleTrackClick(e) {
     return;
   }
 
-  // Map distance to track number (outer = track 1, inner = last track)
+  // TODO: check if I still need this code
   const playableRadius = maxRadius - labelRadius;
   const distanceFromEdge = maxRadius - distance;
   const normalizedPosition = distanceFromEdge / playableRadius;
@@ -376,7 +376,6 @@ function handleTrackClick(e) {
   state.currentTrack = clampedTrack;
   updateArmPositionForTrack(clampedTrack);
 
-  // Visual feedback
   record.classList.add("track-selected");
   setTimeout(() => record.classList.remove("track-selected"), 200);
 
@@ -392,6 +391,7 @@ function handleTrackClick(e) {
   }
 }
 
+// TODO: check if I still need this code now
 function updateArmPositionForTrack(trackNumber) {
   const progress = (trackNumber - 1) / Math.max(1, state.totalTracks - 1);
   const angle = ARM_START + progress * (ARM_END - ARM_START);
@@ -415,16 +415,14 @@ function skipToTrack(trackNumber) {
       if (skipsRemaining > 0) {
         spotifyController.next();
         skipsRemaining--;
-        setTimeout(doSkip, 500); // Increased delay for reliability
+        setTimeout(doSkip, 500);
       }
     }
     setTimeout(doSkip, 800);
   }
 }
 
-// ============================================
-// PLAYBACK CONTROLS (Consolidated)
-// ============================================
+// Playback Controls
 
 async function startPlayback() {
   if (!state.recordLoaded || !state.currentAlbum) return;
@@ -458,12 +456,12 @@ async function startPlayback() {
       !state._spotifyLoadedAlbumId ||
       state._spotifyLoadedAlbumId !== state.currentAlbum.spotifyId
     ) {
-      // load  album
+      // load album
       await new Promise((resolve) => {
         spotifyController.loadUri(
           `spotify:album:${state.currentAlbum.spotifyId}`,
         );
-        // give controller time to load before skipping
+        // give Spotify controller time to load before skipping
         setTimeout(resolve, 500);
       });
       state._spotifyLoadedAlbumId = state.currentAlbum.spotifyId;
@@ -491,7 +489,7 @@ async function startPlayback() {
 async function stopPlayback() {
   state.playing = false;
 
-  // ui updates
+  // updates ui
   if (looseRecord) looseRecord.classList.remove("spinning");
   moveArm(false);
   if (led) led.classList.remove("on");
@@ -519,9 +517,7 @@ function togglePlay() {
   }
 }
 
-// ============================================
-// SPEED CONTROL
-// ============================================
+// Speed control buttons
 function updateSpinDuration() {
   const baseDuration = state.speed === 33 ? 1.8 : 1.35;
   const adjustedDuration = baseDuration * (1 - state.pitch * 0.08);
@@ -553,9 +549,7 @@ if (armContainer) {
   armContainer.classList.add("rest");
 }
 
-// ============================================
-// SPOTIFY IFRAME API
-// ============================================
+// Spotify iframe API
 window.onSpotifyIframeApiReady = (IFrameAPI) => {
   console.log("Spotify IFrame API ready");
 
@@ -573,9 +567,7 @@ window.onSpotifyIframeApiReady = (IFrameAPI) => {
   });
 };
 
-// ============================================
-// FETCH ALBUM ART
-// ============================================
+// Fetching album art
 async function fetchAlbumArt(spotifyId) {
   try {
     const response = await fetch(
@@ -604,8 +596,80 @@ async function updateAlbumCovers() {
   }
 }
 
-// ============================================
-// INITIALIZE
-// ============================================
 renderAlbumList();
 updateAlbumCovers();
+
+// Overlay on page load with tips logic
+const overlay = document.getElementById("firstTimeOverlay");
+const overlayDismiss = document.getElementById("overlayDismiss");
+const overlaySkipTips = document.getElementById("overlaySkipTips");
+
+if (overlay && overlayDismiss && overlaySkipTips) {
+  // always show overlay initially
+  overlay.style.display = "flex";
+
+  overlayDismiss.addEventListener("click", () => {
+    overlay.style.display = "none";
+    showTooltips();
+  });
+
+  overlaySkipTips.addEventListener("click", () => {
+    overlay.style.display = "none";
+    disableTooltips();
+  });
+}
+
+// Function to show tooltips
+function showTooltips() {
+  // Example tooltip elements for key interactive elements
+  const startStopBtn = document.querySelector(".start-stop");
+  const platter = document.querySelector(".platter");
+  const speedBtns = document.querySelectorAll(".speed-btn");
+  const pitchHandle = document.querySelector(".pitch-handle");
+
+  const tooltipStyle = `
+        position: absolute;
+        background: rgba(30,30,30,0.9);
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        pointer-events: none;
+        z-index: 9999;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+
+  function createTooltip(element, text) {
+    const tip = document.createElement("div");
+    tip.className = "tooltip";
+    tip.innerText = text;
+    tip.style.cssText = tooltipStyle;
+    document.body.appendChild(tip);
+
+    const rect = element.getBoundingClientRect();
+    tip.style.left = rect.left + rect.width / 2 - tip.offsetWidth / 2 + "px";
+    tip.style.top = rect.top - 30 + "px";
+    setTimeout(() => (tip.style.opacity = "1"), 100);
+    return tip;
+  }
+
+  window.activeTooltips = [];
+  if (startStopBtn)
+    window.activeTooltips.push(
+      createTooltip(startStopBtn, "Press to start or pause playback"),
+    );
+  if (platter)
+    window.activeTooltips.push(
+      createTooltip(platter, "Drop a record here to play"),
+    );
+}
+
+// Function to disable tooltips
+function disableTooltips() {
+  if (window.activeTooltips) {
+    window.activeTooltips.forEach((tip) => tip.remove());
+    window.activeTooltips = [];
+  }
+}

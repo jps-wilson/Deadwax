@@ -1,3 +1,123 @@
+/*  Tooltip controls */
+.tooltip-controls {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.tooltip-controls button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.tooltip-controls button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+/* First-time overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* ensuring that overlay is on top*/
+  pointer-events: auto; /* allow click to pass through */
+}
+.overlay-content {
+  background: #1b1d21;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  color: #fff;
+  max-width: 400px;
+  z-index: 10000; /* ensures button is above overlay */
+  pointer-events: auto; /* allow clicks on button */
+}
+.overlay-content h2 {
+  margin: 0 0 15px 0;
+  font-size: 20px;
+}
+.overlay-content p {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 20px;
+  opacity: 100%;
+}
+/* Overlay actions for tips/skip */
+.overlay-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 10px;
+}
+.overlay-actions button {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--led-on);
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.overlay-actions button:hover {
+  background: var(--led-off);
+}
+/* Tooltips */
+.tooltip {
+  position: absolute;
+  background: rgba(20, 20, 20, 0.9);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(30, 167, 255, 0.5);
+}
+
+.tooltip.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(20, 20, 20, 0.9);
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Tooltip arrow for highlighting interactive elements */
+.tooltip.highlight-startstop::after {
+  border-top-color: rgba(30, 167, 255, 0.5);
+}
+.tooltip.tooltip.highlight-platter::after {
+  border-top-color: rgba(30, 167, 255, 0.5);
+}
+
 :root {
   --color-bg: #1a1a1a;
   --color-player: #1b1d21;
@@ -37,6 +157,27 @@ body {
     sans-serif;
   min-height: 100vh;
   min-height: 100dvh;
+}
+
+/* FIRST-TIME OVERLAY */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.overlay-content {
+  background: #1b1d21;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  color: #fff;
+  max-width: 400px;
+}
+.overlay-content h2 {
 }
 
 /* APP LAYOUT */
