@@ -1523,3 +1523,12 @@ footer a:hover {
   transform: translate(-50%, -50%) scale(1.25);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5) 0 0 12px rgba(30, 167, 255, 0.3);
 }
+
+.now-playing {
+  cursor: grab;
+}
+
+.now-playing.dragging {
+  cursor: grabbing;
+  opacity: 0.9;
+}

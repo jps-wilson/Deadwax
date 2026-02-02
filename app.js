@@ -807,3 +807,50 @@ if (overlay && overlayDismiss && overlaySkipTips) {
     overlay.style.display = "none";
   });
 }
+
+// Mobile: Draggable Now Playing Display
+function setupMobileNowPlayingDrag() {
+  const nowPlayingEl = document.querySelector(".now-playing");
+  if (!nowPlayingEl) return;
+
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  function startDrag(e) {
+    if (window.innerWidth > 768) return; // only on mobile
+    const touch = e.touches ? e.touches[0] : e;
+    isDragging = true;
+    const rect = nowPlayingEl.getBoundingClientRect();
+    offsetX = touch.clientX - rect.left;
+    offsetY = touch.clientY - rect.top;
+    nowPlayingEl.classList.add("dragging");
+    e.preventDefault();
+  }
+
+  function dragMove(e) {
+    if (!isDragging) return;
+    const touch = e.touches ? e.touches[0] : e;
+    nowPlayingEl.style.left = touch.clientX - offsetX + "px";
+    nowPlayingEl.style.top = touch.clientY - offsetY + "px";
+    nowPlayingEl.style.right = "auto";
+    nowPlayingEl.style.bottom = "auto";
+  }
+
+  function stopDrag() {
+    if (!isDragging) return;
+    isDragging = false;
+    nowPlayingEl.classList.remove("dragging");
+  }
+
+  nowPlayingEl.addEventListener("touchstart", startDrag);
+  nowPlayingEl.addEventListener("mousedown", startDrag);
+
+  document.addEventListener("touchmove", dragMove);
+  document.addEventListener("mousemove", dragMove);
+
+  document.addEventListener("touchend", stopDrag);
+  document.addEventListener("mouseup", stopDrag);
+}
+
+setupMobileNowPlayingDrag();
