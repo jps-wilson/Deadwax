@@ -425,84 +425,178 @@ function skipToTrack(trackNumber) {
 // PLAYBACK CONTROLS
 // ============================================
 
+// function startPlayback() {
+//   if (!state.recordLoaded) {
+//     console.log("No record loaded");
+//     return;
+//   }
+//   state.playing = true;
+
+//   if (looseRecord) {
+//     looseRecord.classList.add("spinning");
+//   }
+
+//   // Animate arm onto LP
+//   const needleArm = document.querySelector(".arm");
+//   if (needleArm) {
+//     needleArm.classList.remove("rest");
+//     needleArm.classList.add("playing");
+//   }
+
+//   if (led) {
+//     led.classList.add("on");
+//   }
+
+//   if (strobeLight) {
+//     strobeLight.classList.add("on");
+//   }
+
+//   if (nowPlaying) {
+//     nowPlaying.classList.add("active");
+//     if (state.currentAlbum) {
+//       nowPlaying.innerHTML = `
+//         <span class="now-playing-text">Now Playing - Track ${state.currentTrack}</span>
+//         <span class="now-playing-title">${state.currentAlbum.name}</span>
+//         <span class="now-playing-artist">${state.currentAlbum.artist}</span>
+//       `;
+//     }
+//   }
 function startPlayback() {
-  if (!state.recordLoaded) {
-    console.log("No record loaded");
-    return;
-  }
+  if (!state.recordLoaded) return;
+
   state.playing = true;
 
-  if (looseRecord) {
-    looseRecord.classList.add("spinning");
-  }
+  // Record spinning
+  if (looseRecord) looseRecord.classList.add("spinning");
 
-  // Animate arm onto LP
-  const needleArm = document.querySelector(".arm");
-  if (needleArm) {
-    needleArm.classList.remove("rest");
-    needleArm.classList.add("playing");
-  }
+  // Animate arm onto record
+  moveArm(true);
 
-  if (led) {
-    led.classList.add("on");
-  }
+  // Lights
+  if (led) led.classList.add("on");
+  if (strobeLight) strobeLight.classList.add("on");
 
-  if (strobeLight) {
-    strobeLight.classList.add("on");
-  }
-
-  if (nowPlaying) {
+  // Update now playing display
+  if (nowPlaying && state.currentAlbum) {
     nowPlaying.classList.add("active");
-    if (state.currentAlbum) {
-      nowPlaying.innerHTML = `
-        <span class="now-playing-text">Now Playing - Track ${state.currentTrack}</span>
-        <span class="now-playing-title">${state.currentAlbum.name}</span>
-        <span class="now-playing-artist">${state.currentAlbum.artist}</span>
-      `;
-    }
+    nowPlaying.innerHTML = `
+      <span class="now-playing-text">Now Playing - Track ${state.currentTrack}</span>
+      <span class="now-playing-title">${state.currentAlbum.name}</span>
+      <span class="now-playing-artist">${state.currentAlbum.artist}</span>
+    `;
   }
-  // Arm drift and position update removed
+
   updateSpinDuration();
 
-  // Start Spotify playback
+  // Spotify playback
   if (spotifyController && state.currentAlbum) {
-    console.log(`Starting playback from track ${state.currentTrack}`);
+    if (!state.hasLoadedOnce) {
+      spotifyController.loadUri(
+        `spotify:album:${state.currentAlbum.spotifyId}`,
+      );
+      state.hasLoadedOnce = true;
 
-    // Load album first
-    spotifyController.loadUri(`spotify:album:${state.currentAlbum.spotifyId}`);
-
-    // Wait for load, then skip to track and play
-    setTimeout(() => {
-      if (state.currentTrack > 1) {
-        // Skip to the selected track
-        let skipsRemaining = state.currentTrack - 1;
-
-        function skipAndPlay() {
-          if (skipsRemaining > 0) {
-            spotifyController.next();
-            skipsRemaining--;
-            console.log(`Skipping... ${skipsRemaining} remaining`);
-
+      // Skip to current track after load
+      setTimeout(() => {
+        if (state.currentTrack > 1) {
+          let skipsRemaining = state.currentTrack - 1;
+          function doSkip() {
             if (skipsRemaining > 0) {
-              setTimeout(skipAndPlay, 350);
+              spotifyController.next();
+              skipsRemaining--;
+              setTimeout(doSkip, 350);
             } else {
-              // Done skipping, now play
-              setTimeout(() => {
-                spotifyController.resume();
-                console.log("Playback started");
-              }, 300);
+              spotifyController.resume();
             }
           }
+          doSkip();
+        } else {
+          spotifyController.resume();
         }
-
-        skipAndPlay();
-      } else {
-        // Track 1, just play
-        spotifyController.resume();
-        console.log("Playback started at track 1");
-      }
-    }, 500);
+      }, 500);
+    } else {
+      // Resume if album already loaded
+      spotifyController.resume();
+    }
   }
+}
+
+function stopPlayback() {
+  state.playing = false;
+
+  // Stop spinning and move arm to rest
+  if (looseRecord) looseRecord.classList.remove("spinning");
+  moveArm(false);
+
+  // Lights off
+  if (led) led.classList.remove("on");
+  if (strobeLight) strobeLight.classList.remove("on");
+
+  if (nowPlaying) nowPlaying.classList.remove("active");
+
+  // Pause Spotify without resetting album
+  if (spotifyController) spotifyController.pause();
+}
+
+function togglePlay() {
+  if (!state.recordLoaded) {
+    startStopBtn?.classList.add("shake");
+    setTimeout(() => startStopBtn.classList.remove("shake"), 300);
+    return;
+  }
+
+  if (!spotifyController) return;
+
+  if (state.playing) {
+    stopPlayback(); // Pause and move arm to rest
+  } else {
+    startPlayback(); // Play or resume and move arm onto record
+  }
+
+  state.playing = !state.playing;
+}
+
+// Arm drift and position update removed
+updateSpinDuration();
+
+// Start Spotify playback
+if (spotifyController && state.currentAlbum) {
+  console.log(`Starting playback from track ${state.currentTrack}`);
+
+  // Load album first
+  spotifyController.loadUri(`spotify:album:${state.currentAlbum.spotifyId}`);
+
+  // Wait for load, then skip to track and play
+  setTimeout(() => {
+    if (state.currentTrack > 1) {
+      // Skip to the selected track
+      let skipsRemaining = state.currentTrack - 1;
+
+      function skipAndPlay() {
+        if (skipsRemaining > 0) {
+          spotifyController.next();
+          skipsRemaining--;
+          console.log(`Skipping... ${skipsRemaining} remaining`);
+
+          if (skipsRemaining > 0) {
+            setTimeout(skipAndPlay, 350);
+          } else {
+            // Done skipping, now play
+            setTimeout(() => {
+              spotifyController.resume();
+              console.log("Playback started");
+            }, 300);
+          }
+        }
+      }
+
+      skipAndPlay();
+    } else {
+      // Track 1, just play
+      spotifyController.resume();
+      console.log("Playback started at track 1");
+    }
+  }, 500);
 }
 
 function stopPlayback() {
