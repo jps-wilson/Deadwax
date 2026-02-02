@@ -599,6 +599,69 @@ async function updateAlbumCovers() {
 renderAlbumList();
 updateAlbumCovers();
 
+// Mobile touch drag support
+function setupTouchDrag(albumCards) {
+  albumCards.forEach((card) => {
+    let touchDragPreview = null;
+    let draggedAlbum = null;
+
+    card.addEventListener("touchstart", async (e) => {
+      const albumId = card.dataset.albumId;
+      draggedAlbum = spotifyAlbums.find((a) => a.id === albumId);
+      if (!draggedAlbum) return;
+
+      touchDragPreview = document.createElement("div");
+      touchDragPreview.classList.add("drag-preview-record");
+
+      const vinyl = document.createElement("div");
+      vinyl.classList.add("drag-preview-vinyl");
+
+      const label = document.createElement("div");
+      label.classList.add("drag-preview-label");
+      if (draggedAlbum.coverUrl)
+        label.style.backgroundImage = `url(${draggedAlbum.coverUrl})`;
+
+      vinyl.appendChild(label);
+      touchDragPreview.appendChild(vinyl);
+      document.body.appendChild(touchDragPreview);
+
+      const touch = e.touches[0];
+      touchDragPreview.style.left = touch.clientX - 50 + "px";
+      touchDragPreview.style.top = touch.clientY - 50 + "px";
+
+      e.preventDefault();
+    });
+
+    card.addEventListener("touchmove", (e) => {
+      if (!touchDragPreview) return;
+      const touch = e.touches[0];
+      touchDragPreview.style.left = touch.clientX - 50 + "px";
+      touchDragPreview.style.top = touch.clientY - 50 + "px";
+      e.preventDefault();
+    });
+
+    card.addEventListener("touchend", (e) => {
+      if (!touchDragPreview || !draggedAlbum) return;
+
+      const playerRect = playerElement.getBoundingClientRect();
+      const touch = e.changedTouches[0];
+      if (
+        touch.clientX >= playerRect.left &&
+        touch.clientX <= playerRect.right &&
+        touch.clientY >= playerRect.top &&
+        touch.clientY <= playerRect.bottom
+      ) {
+        loadAlbumOntoPlatter(draggedAlbum);
+      }
+
+      touchDragPreview.remove();
+      touchDragPreview = null;
+      draggedAlbum = null;
+    });
+  });
+}
+setupTouchDrag(document.querySelectorAll(".album-card"));
+
 // Overlay on page load with guided tooltip sequence logic
 const overlay = document.getElementById("firstTimeOverlay");
 const overlayDismiss = document.getElementById("overlayDismiss");

@@ -10,24 +10,21 @@
   pointer-events: auto; /* allow click to pass through */
 }
 .overlay-content {
-  background: #1b1d21;
-  padding: 30px;
-  border-radius: 12px;
+  padding: 20px;
+  border-radius: 14px;
+  max-width: 90%;
+  width: 300px;
   text-align: center;
-  color: #fff;
-  max-width: 400px;
-  z-index: 10000; /* ensures button is above overlay */
-  pointer-events: auto; /* allow clicks on button */
 }
+
 .overlay-content h2 {
-  margin: 0 0 15px 0;
-  font-size: 20px;
+  font-size: 18px;
+  margin-bottom: 12px;
 }
+
 .overlay-content p {
   font-size: 14px;
-  line-height: 1.4;
-  margin-bottom: 20px;
-  opacity: 100%;
+  line-height: 1.5;
 }
 /* Overlay actions for tips/skip */
 .overlay-actions {
@@ -72,24 +69,20 @@
 }
 /* Tooltips */
 .tooltip {
-  position: fixed;
-  background: rgba(20, 20, 20, 0.9);
-  backdrop-filter: blur(6px);
-  color: #fff;
-  padding: 8px 14px;
-  border-radius: 10px;
+  background: rgba(30, 30, 30, 0.95);
+  padding: 10px 16px;
+  border-radius: 12px;
   font-size: 13px;
   font-weight: 500;
-  pointer-events: auto;
-  z-index: 10001;
-  white-space: nowrap;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  max-width: 240px;
+  line-height: 1.4;
   opacity: 0;
-  transform: translateY(-4px);
+  transform: translateY(-6px);
   transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(30, 167, 255, 0.5);
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
 .tooltip.show {
@@ -104,26 +97,27 @@
   height: 0;
 }
 
-.tooltip.bottom {
-  margin-top: 4px;
-}
-
 .tooltip.bottom::after {
   top: -8px;
   left: 50%;
   transform: translateX(-50%);
-
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-bottom: 8px solid rgba(20, 20, 20, 0.95);
+  border-bottom: 8px solid rgba(30, 30, 30, 0.95);
 }
 
-/* Tooltip arrow for highlighting interactive elements */
-.tooltip.highlight-startstop::after {
-  border-top-color: rgba(30, 167, 255, 0.5);
+.tooltip-controls button {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: none;
+  background: #1ea7ff;
+  color: #fff;
+  cursor: pointer;
 }
-.tooltip.highlight-platter::after {
-  border-top-color: rgba(30, 167, 255, 0.5);
+
+.tooltip-controls button:hover {
+  background: #0c83c2;
 }
 
 :root {
@@ -1263,5 +1257,353 @@ footer a:hover {
   }
   to {
     transform: rotate(-360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  /* Stack layout vertically */
+  .app-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  /* Sidebar adjustments */
+  .record-collection {
+    width: 100%;
+    min-width: auto;
+    height: auto;
+    order: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px;
+    background: linear-gradient(180deg, #1c1c1c, #141414);
+  }
+
+  .record-collection h2 {
+    font-size: 16px;
+    padding: 12px 10px;
+  }
+
+  .collection-list {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px 0;
+  }
+
+  .album-card {
+    flex-direction: column;
+    align-items: center;
+    min-width: 90px;
+    padding: 8px;
+    border-radius: 8px;
+  }
+
+  .album-cover {
+    width: 60px;
+    height: 60px;
+  }
+
+  .album-title,
+  .album-artist {
+    font-size: 12px;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .spotify-playlist-link,
+  .github-link {
+    font-size: 0.75rem;
+    margin-bottom: 8px;
+  }
+
+  /* Player adjustments */
+  .player-area {
+    width: 100%;
+    height: 90%;
+    padding: 10px 0 30px 0;
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 420px;
+  }
+
+  .player {
+    width: 98vw;
+    max-width: 380px;
+    min-width: 0;
+    aspect-ratio: 1 / 1.12;
+    height: auto;
+    border-radius: 18px;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.55),
+      0 1.5px 6px rgba(0, 0, 0, 0.22);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: visible;
+  }
+
+  .platter {
+    width: 78vw;
+    max-width: 260px;
+    min-width: 180px;
+    height: 78vw;
+    max-height: 260px;
+    min-height: 180px;
+    left: 50%;
+    top: 48%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1.5px solid #1e2025;
+    background:
+      radial-gradient(
+        circle at 32% 32%,
+        rgba(255, 255, 255, 0.08),
+        transparent 50%
+      ),
+      radial-gradient(circle at center, #1f1f1f 0%, #0d0d0d 65%, #0a0a0a 100%);
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, 0.5),
+      inset 0 1px 3px rgba(255, 255, 255, 0.08);
+    z-index: 4;
+  }
+
+  /* Mobile: slight platter shift for tonearm clearance */
+  .platter,
+  .lp.on-platter {
+    left: 48%;
+    top: 46%;
+  }
+
+  .platter .spindle {
+    width: 12px;
+    height: 12px;
+    box-shadow:
+      0 2px 5px rgba(0, 0, 0, 0.18),
+      inset 0 2px 2px #fff5;
+    z-index: 500;
+  }
+
+  .lp.on-platter {
+    width: 74vw;
+    max-width: 245px;
+    min-width: 120px;
+    filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.55)) contrast(1.1);
+    z-index: 20;
+  }
+
+  .record {
+    box-shadow:
+      0 3px 10px rgba(0, 0, 0, 0.45),
+      inset 0 0 18px rgba(0, 0, 0, 0.23);
+    border: 1.5px solid #191919;
+    background:
+      radial-gradient(
+        circle at center,
+        transparent 0%,
+        transparent 14%,
+        #111 14.5%
+      ),
+      repeating-radial-gradient(
+        circle at center,
+        #1a1a1a 0px,
+        #0d0d0d 1.5px,
+        #1a1a1a 3px,
+        #181818 4.5px
+      );
+  }
+
+  .label {
+    width: 44%;
+    height: 44%;
+    border-radius: 50%;
+    box-shadow:
+      0 1px 4px rgba(0, 0, 0, 0.13),
+      inset 0 2px 5px rgba(255, 255, 255, 0.11);
+  }
+
+  /* Tonearm: realistic tonearm placement for mobile */
+  .arm-container {
+    position: absolute;
+    top: 16%;
+    left: 82%;
+    width: 140px;
+    height: 14px;
+    transform: rotate(90deg) scale(0.7); /* start straight */
+    transform-origin: left center;
+    opacity: 0.85;
+    pointer-events: none;
+    z-index: 40;
+    transition: transform 1s cubic-bezier(0.4, 0, 0.4, 1);
+  }
+
+  .arm {
+    width: 95px;
+    height: 12px;
+    border-radius: 4px;
+    transform-origin: left center;
+    transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* When LP is on and playing, rotate arm around counterweight toward record */
+  .arm-container.playing .arm {
+    transform: rotate(35deg); /* angle pointing to LP */
+  }
+
+  .headshell {
+    left: 95px;
+    width: 14px;
+    height: 12px;
+  }
+  .stylus {
+    left: 110px;
+    width: 3px;
+    height: 8px;
+  }
+  .arm-base {
+    width: 28px;
+    height: 28px;
+    left: -12px;
+    top: 50%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 60% 40%, #e0e0e0 60%, #888 100%);
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.5) inset 0 1px 2px #fff8,
+      inset 0 -2px 4px #4448;
+    border: 2px solid #b0b0b0;
+    z-index: 30;
+  }
+  .arm-counterweight {
+    width: 28px;
+    height: 28px;
+    left: -12px;
+    top: 50%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 60% 40%, #bdbdbd 60%, #666 100%);
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.4),
+      inset 0 1px 2px #fff2;
+    border: 2px solid #888;
+    z-index: 25;
+  }
+
+  .arm-rest {
+    width: 12px;
+    height: 20px;
+    bottom: 31%;
+    right: 27.5%;
+  }
+
+  .start-stop {
+    position: absolute;
+    left: 6%;
+    bottom: 6%;
+    transform: none;
+    padding: 10px 18px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    border-radius: 4px;
+    z-index: 100;
+  }
+
+  /* Brand: only logo visible and centered on mobile */
+  .brand {
+    position: absolute;
+    left: 75%;
+    bottom: 8%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    letter-spacing: 2px;
+    opacity: 0.8;
+    text-align: center;
+    width: auto;
+    z-index: 100;
+  }
+  #tributeId {
+    font-size: 9px;
+  }
+
+  /* LED: simplified for mobile */
+  .led {
+    position: absolute;
+    left: 4%;
+    bottom: 16%;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    z-index: 90;
+    opacity: 0.6;
+    border: 2px solid red;
+  }
+
+  /* Now playing info: move above player for mobile */
+  /* TODO: Come back to this to remove the display none property */
+  .now-playing {
+    position: static;
+    margin-top: 24px;
+    min-width: 0;
+    max-width: 90vw;
+    padding: 14px 10px;
+    border-radius: 14px;
+    font-size: 13px;
+    border: 2px solid red;
+    display: none;
+  }
+  .now-playing-title,
+  .now-playing-artist,
+  .now-playing-text {
+    max-width: 74vw;
+    padding-left: 16px;
+    font-size: 12px;
+  }
+
+  /* Tooltips (unchanged except font/size) */
+  .tooltip {
+    max-width: 220px;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .tooltip-controls button {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  /* Hide extra platter/record visuals for clarity */
+  .platter::before,
+  .platter::after,
+  .record::after {
+    display: none !important;
+  }
+
+  /* Mobile: Hide non-essential controls and decorations */
+  .speed-selector,
+  .pitch,
+  .speaker,
+  .knob-container.volume,
+  .strobe-light,
+  .rpm-adapter,
+  .arm-rest {
+    display: none !important;
+  }
+
+  /* Mobile interaction clarity */
+  .player * {
+    pointer-events: none;
+  }
+
+  .platter,
+  .lp,
+  .record,
+  .start-stop {
+    pointer-events: auto;
   }
 }
