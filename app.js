@@ -406,21 +406,21 @@ function updateArmPositionForTrack(trackNumber) {
   }
 }
 
-function skipToTrack(trackNumber) {
-  if (!spotifyController || !state.currentAlbum) return;
-  spotifyController.loadUri(`spotify:album:${state.currentAlbum.spotifyId}`);
-  if (trackNumber > 1) {
-    let skipsRemaining = trackNumber - 1;
-    function doSkip() {
-      if (skipsRemaining > 0) {
-        spotifyController.next();
-        skipsRemaining--;
-        setTimeout(doSkip, 500);
-      }
-    }
-    setTimeout(doSkip, 800);
-  }
-}
+// function skipToTrack(trackNumber) {
+//   if (!spotifyController || !state.currentAlbum) return;
+//   spotifyController.loadUri(`spotify:album:${state.currentAlbum.spotifyId}`);
+//   if (trackNumber > 1) {
+//     let skipsRemaining = trackNumber - 1;
+//     function doSkip() {
+//       if (skipsRemaining > 0) {
+//         spotifyController.next();
+//         skipsRemaining--;
+//         setTimeout(doSkip, 500);
+//       }
+//     }
+//     setTimeout(doSkip, 800);
+//   }
+// }
 
 // Playback Controls
 
@@ -520,7 +520,10 @@ function togglePlay() {
 // Speed control buttons
 function updateSpinDuration() {
   const baseDuration = state.speed === 33 ? 1.8 : 1.35;
-  const adjustedDuration = baseDuration * (1 - state.pitch * 0.08);
+  const adjustedDuration = bMath.max(
+    0.3,
+    baseDuration * (1 - state.pitch * 0.08),
+  );
 
   if (looseRecord) {
     looseRecord.style.setProperty("--spin-duration", `${adjustedDuration}s`);
@@ -721,20 +724,30 @@ const tooltipSteps = [
 
 function showTooltipStep(index) {
   cleanupTooltip();
+  if (index < 0 || index >= tooltipSteps.length) return;
 
-  const step = tooltipSteps[index];
-  if (!step) return;
+  // Find next step that actually has a DOM target
+  let stepIndex = index;
+  let step = tooltipSteps[stepIndex];
+  let target = document.querySelector(step.selector);
+  while (!target && stepIndex < tooltipSteps.length - 1) {
+    stepIndex++;
+    step = tooltipSteps[stepIndex];
+    target = document.querySelector(step.selector);
+  }
+  if (!target) return; // no visible targets available
 
-  const target = document.querySelector(step.selector);
-  if (!target) return;
+  tooltipStepIndex = stepIndex;
 
   const tip = document.createElement("div");
   tip.className = "tooltip";
-  tip.innerHTML = `<div>${step.text}</div>
-                  <div class = "tooltip-controls">
-                    <button id="tooltipSkip">Skip</button>
-                    <button id=tooltipNext>${index === tooltipSteps.length - 1 ? "Done" : "Next"}</button>
-                  </div>`;
+  tip.innerHTML = `
+    <div class="tooltip-text">${step.text}</div>
+    <div class="tooltip-controls">
+      <button class="tooltip-skip">Skip</button>
+      <button class="tooltip-next">${stepIndex === tooltipSteps.length - 1 ? "Done" : "Next"}</button>
+    </div>
+  `;
   document.body.appendChild(tip);
 
   requestAnimationFrame(() => {
@@ -743,42 +756,53 @@ function showTooltipStep(index) {
     const tooltipHeight = tip.offsetHeight;
     const padding = 12;
 
-    let left;
-    let top;
+    let left = rect.left + rect.width / 2 - tooltipWidth / 2;
+    let top =
+      step.placement === "bottom"
+        ? rect.bottom + padding
+        : rect.top - tooltipHeight - padding;
 
-    if (step.placement === "bottom") {
-      left = rect.left + rect.width / 2 - tooltipWidth / 2;
-      top = rect.bottom + padding;
-
-      tip.classList.add("bottom");
-    } else {
-      // default (above)
-      left = rect.left + rect.width / 2 - tooltipWidth / 2;
-      top = rect.top - tooltipHeight - padding;
-
-      tip.classList.remove("bottom");
-    }
+    // keep tooltip inside viewport
+    left = Math.max(8, Math.min(left, window.innerWidth - tooltipWidth - 8));
+    top = Math.max(8, Math.min(top, window.innerHeight - tooltipHeight - 8));
 
     tip.style.left = `${left}px`;
     tip.style.top = `${top}px`;
-
+    tip.classList.toggle("bottom", step.placement === "bottom");
     tip.classList.add("show");
   });
 
   activeTooltip = tip;
 
-  document.getElementById("tooltipNext").addEventListener("click", () => {
-    tooltipStepIndex++;
-    if (tooltipStepIndex < tooltipSteps.length) {
-      showTooltipStep(tooltipStepIndex);
-    } else {
-      cleanupTooltip();
-    }
-  });
+  // scope button selection to this tooltip (avoid global IDs / null lookups)
+  const nextBtn = tip.querySelector(".tooltip-next");
+  const skipBtn = tip.querySelector(".tooltip-skip");
 
-  document
-    .getElementById("tooltipSkip")
-    .addEventListener("click", cleanupTooltip);
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      tooltipStepIndex++;
+      if (tooltipStepIndex < tooltipSteps.length) {
+        showTooltipStep(tooltipStepIndex);
+      } else {
+        cleanupTooltip();
+      }
+    });
+  }
+
+  if (skipBtn) {
+    skipBtn.addEventListener("click", cleanupTooltip);
+  }
+}
+
+function startTooltipSequence() {
+  // Start at the first step that has a visible target
+  for (let i = 0; i < tooltipSteps.length; i++) {
+    if (document.querySelector(tooltipSteps[i].selector)) {
+      tooltipStepIndex = i;
+      showTooltipStep(i);
+      return;
+    }
+  }
 }
 
 function cleanupTooltip() {
@@ -786,12 +810,6 @@ function cleanupTooltip() {
     activeTooltip.remove();
     activeTooltip = null;
   }
-}
-
-function startTooltipSequence() {
-  tooltipStepIndex = 0;
-
-  showTooltipStep(tooltipStepIndex);
 }
 
 if (overlay && overlayDismiss && overlaySkipTips) {
