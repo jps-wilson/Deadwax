@@ -520,7 +520,7 @@ function togglePlay() {
 // Speed control buttons
 function updateSpinDuration() {
   const baseDuration = state.speed === 33 ? 1.8 : 1.35;
-  const adjustedDuration = bMath.max(
+  const adjustedDuration = Math.max(
     0.3,
     baseDuration * (1 - state.pitch * 0.08),
   );
@@ -567,6 +567,25 @@ window.onSpotifyIframeApiReady = (IFrameAPI) => {
     spotifyController = controller;
     console.log("Spotify controller ready");
     if (typeof spotifyReadyResolve === "function") spotifyReadyResolve();
+
+    controller.addListener("playback_update", (e) => {
+      const data = e.data;
+      if (!data || !data.track) return;
+
+      const trackName = data.track.name;
+      const artistName =
+        data.track.artists?.[0]?.name || state.currentAlbum?.artist || "";
+      const albumName =
+        data.track.album?.name || state.currentAlbum?.name || "";
+
+      if (nowPlaying && state.playing) {
+        nowPlaying.innerHTML = `
+          <span class="now-playing-text">Now Playing</span>
+          <span class="now-playing-title">${trackName}</span>
+          <span class="now-playing-artist>${artistName} - ${albumName}</span>
+        `;
+      }
+    });
   });
 };
 
@@ -702,15 +721,17 @@ const overlay = document.getElementById("firstTimeOverlay");
 const overlayDismiss = document.getElementById("overlayDismiss");
 
 if (overlay && overlayDismiss) {
-  // always show overlay initially
-  overlay.style.display = "flex";
+  const overlayShown = sessionStorage.getItem("deadwaxOverlayShown");
+
+  if (!overlayShown) {
+    overlay.style.display = "flex";
+  } else {
+    overlay.style.display = "none";
+  }
 
   overlayDismiss.addEventListener("click", () => {
     overlay.style.display = "none";
-  });
-
-  overlaySkipTips.addEventListener("click", () => {
-    overlay.style.display = "none";
+    sessionStorage.setItem("deadwaxOverlayShown", true);
   });
 }
 
