@@ -700,125 +700,13 @@ setupTouchDrag(document.querySelectorAll(".album-card"));
 // Overlay on page load with guided tooltip sequence logic
 const overlay = document.getElementById("firstTimeOverlay");
 const overlayDismiss = document.getElementById("overlayDismiss");
-const overlaySkipTips = document.getElementById("overlaySkipTips");
 
-// Guided tooltip sequence system
-let tooltipStepIndex = 0;
-let activeTooltip = null;
-
-const tooltipSteps = [
-  {
-    selector: ".record-collection h2",
-    text: "Choose an album and drag it to the turntable",
-    placement: "bottom",
-  },
-  {
-    selector: ".platter",
-    text: "Drop the record here to load the album",
-  },
-  {
-    selector: ".start-stop",
-    text: "Press Start / Stop to play or pause",
-  },
-];
-
-function showTooltipStep(index) {
-  cleanupTooltip();
-  if (index < 0 || index >= tooltipSteps.length) return;
-
-  // Find next step that actually has a DOM target
-  let stepIndex = index;
-  let step = tooltipSteps[stepIndex];
-  let target = document.querySelector(step.selector);
-  while (!target && stepIndex < tooltipSteps.length - 1) {
-    stepIndex++;
-    step = tooltipSteps[stepIndex];
-    target = document.querySelector(step.selector);
-  }
-  if (!target) return; // no visible targets available
-
-  tooltipStepIndex = stepIndex;
-
-  const tip = document.createElement("div");
-  tip.className = "tooltip";
-  tip.innerHTML = `
-    <div class="tooltip-text">${step.text}</div>
-    <div class="tooltip-controls">
-      <button class="tooltip-skip">Skip</button>
-      <button class="tooltip-next">${stepIndex === tooltipSteps.length - 1 ? "Done" : "Next"}</button>
-    </div>
-  `;
-  document.body.appendChild(tip);
-
-  requestAnimationFrame(() => {
-    const rect = target.getBoundingClientRect();
-    const tooltipWidth = tip.offsetWidth;
-    const tooltipHeight = tip.offsetHeight;
-    const padding = 12;
-
-    let left = rect.left + rect.width / 2 - tooltipWidth / 2;
-    let top =
-      step.placement === "bottom"
-        ? rect.bottom + padding
-        : rect.top - tooltipHeight - padding;
-
-    // keep tooltip inside viewport
-    left = Math.max(8, Math.min(left, window.innerWidth - tooltipWidth - 8));
-    top = Math.max(8, Math.min(top, window.innerHeight - tooltipHeight - 8));
-
-    tip.style.left = `${left}px`;
-    tip.style.top = `${top}px`;
-    tip.classList.toggle("bottom", step.placement === "bottom");
-    tip.classList.add("show");
-  });
-
-  activeTooltip = tip;
-
-  // scope button selection to this tooltip (avoid global IDs / null lookups)
-  const nextBtn = tip.querySelector(".tooltip-next");
-  const skipBtn = tip.querySelector(".tooltip-skip");
-
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      tooltipStepIndex++;
-      if (tooltipStepIndex < tooltipSteps.length) {
-        showTooltipStep(tooltipStepIndex);
-      } else {
-        cleanupTooltip();
-      }
-    });
-  }
-
-  if (skipBtn) {
-    skipBtn.addEventListener("click", cleanupTooltip);
-  }
-}
-
-function startTooltipSequence() {
-  // Start at the first step that has a visible target
-  for (let i = 0; i < tooltipSteps.length; i++) {
-    if (document.querySelector(tooltipSteps[i].selector)) {
-      tooltipStepIndex = i;
-      showTooltipStep(i);
-      return;
-    }
-  }
-}
-
-function cleanupTooltip() {
-  if (activeTooltip) {
-    activeTooltip.remove();
-    activeTooltip = null;
-  }
-}
-
-if (overlay && overlayDismiss && overlaySkipTips) {
+if (overlay && overlayDismiss) {
   // always show overlay initially
   overlay.style.display = "flex";
 
   overlayDismiss.addEventListener("click", () => {
     overlay.style.display = "none";
-    startTooltipSequence();
   });
 
   overlaySkipTips.addEventListener("click", () => {
