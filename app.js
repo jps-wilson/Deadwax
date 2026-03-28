@@ -569,6 +569,7 @@ window.onSpotifyIframeApiReady = (IFrameAPI) => {
     if (typeof spotifyReadyResolve === "function") spotifyReadyResolve();
 
     controller.addListener("playback_update", (e) => {
+      console.log("playback_update", e);
       const data = e.data;
       if (!data || !data.track) return;
 
