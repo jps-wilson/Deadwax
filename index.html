@@ -21,14 +21,16 @@
     </div>
     <div class="app-container">
         <!-- Record Collection Sidebar -->
-        <aside class="record-collection">
+        <aside class="record-collection" style="position: relative;">
             <h2>Records Collection</h2>
             <a class="github-link" href="https://github.com/jps-wilson/Deadwax" target="_blank"
                 rel="noopener noreferrer">View the full project on GitHub</a>
-            <a class="spotify-playlist-link"
-                href="https://open.spotify.com/playlist/0ooU9OrjsKcyyz6vuiAvGC?si=xo5tRduZR6GyCKPTln0Zsg"
-                target="_blank" rel="noopener noreferrer">Listen to the full playlist on Spotify</a>
             <div class="collection-list" id="collectionList"></div>
+
+            <!-- Now playing covers the Spotify embed -->
+            <div class="now-playing" id="nowPlaying">
+                <span class="now-playing-text">Drop a record to play</span>
+            </div>
             <div id="spotifyEmbed"></div>
         </aside>
 
@@ -70,11 +72,6 @@
                 <!-- controls -->
                 <div class="led" aria-hidden="true"></div>
                 <button class="start-stop" type="button">Start / Stop</button>
-
-                <!-- now playing info -->
-                <div class="now-playing" id="nowPlaying">
-                    <span class="now-playing-text">Drop a record to play</span>
-                </div>
 
                 <!-- speed selector -->
                 <div class="speed-selector" role="group" aria-label="Speed selection (RPM)">

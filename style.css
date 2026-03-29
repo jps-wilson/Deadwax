@@ -309,12 +309,13 @@ body {
 }
 
 #spotifyEmbed {
-  margin: 1em auto 0 auto;
-  max-width: 400px;
-  min-width: 250px;
-  border-radius: 12px;
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  pointer-events: none;
+  opacity: 0;
+  height: 0;
   overflow: hidden;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
 }
 
 /* ALBUM CARDS */
@@ -1063,24 +1064,21 @@ body {
 
 /* NOW PLAYING INFO */
 .now-playing {
-  position: fixed;
-  right: 32px;
-  bottom: 32px;
-  background: linear-gradient(145deg, #1e2024, #141518);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  padding: 20px 24px;
-  min-width: 240px;
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.5),
-    0 8px 16px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  backdrop-filter: blur(10px);
+  min-height: 160px;
+  background: linear-gradient(145deg, #1e2024, #141518);
+  border-top: 1px solid #2a2a2a;
+  padding: 16px 20px;
+  box-shadow: none;
+  backdrop-filter: none;
+  cursor: default;
+  border-radius: 0;
+  min-width: auto;
+  width: 100%;
 }
 .now-playing::before {
   content: "";
